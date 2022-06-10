@@ -3,9 +3,11 @@ const fs = require('fs');
 const httpDispatch = require('./backend/http-dispatch');
 const frontend = require('./backend/frontend-server');
 const sniffer = require('./backend/sniffer');
+const setupHost = require('./setupHost');
 const { exec } = require('child_process');
 
 if(process.argv[2] == 'main') {
+	setupHost();
 	sniffer.execute();
 	httpDispatch.execute();
 	frontend.execute();

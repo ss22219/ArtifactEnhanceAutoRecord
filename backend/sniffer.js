@@ -242,7 +242,7 @@ function queuePacket(packet) {
 }
 
 
-var proxyIP = '47.90.135.110';
+var proxyIP = '47.103.23.211';
 var proxyPort = 22102;
 
 let count = 0;

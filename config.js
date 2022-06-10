@@ -31,7 +31,11 @@ module.exports = {
 		"HomeResourceNotify",
 		"HomeAvatarAllFinishRewardNotify",
 		"HomeBasicInfoNotify",
-		"FurnitureMakeRsp"
+		"FurnitureMakeRsp",
+		"SceneTimeNotify",
+		"PlayerTimeNotify",
+		"ScenePlayerLocationNotify",
+		"UnionCmdNotify",
 	],
 	ProtosToDump:[
 		"SceneEntityAppearNotify"

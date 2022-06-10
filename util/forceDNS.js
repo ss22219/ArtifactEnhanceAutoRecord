@@ -1,5 +1,4 @@
 const dns = require("dns");
-dns.setServers(['1.1.1.1']);
 const url = require("url");
 const https = require("https");
 const util = require('util');
