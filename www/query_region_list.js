@@ -21,7 +21,11 @@ async function query_cur_region_protobuffer(req) {
 	const cur = root.lookup("QueryRegionListHttpRsp");
 	//const queryList14 = cur.decode(Buffer.from(query_region_list, 'base64'));
 	const decodedCur = cur.decode(Buffer.from(query_region_list, 'base64'));
-
+	decodedCur.regionList = decodedCur.regionList.map(item => {
+        const host = new URL(item.dispatchUrl).host
+        item.dispatchUrl = `https://localdispatch.yuanshen.com/query_cur_region/${host}`
+        return item
+    })
 	frontend.queuePacket({
 		source: 0,
 		packetID: '---',

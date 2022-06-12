@@ -38,7 +38,6 @@ module.exports = {
 		"UnionCmdNotify",
 	],
 	ProtosToDump:[
-		"SceneEntityAppearNotify"
 	],  // add proto names here	to dump them
 	dumpAll : false, // dump all packets except ignored ones if set to true
 }

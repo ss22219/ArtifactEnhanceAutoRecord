@@ -3,35 +3,16 @@ const MHYbuf = require("../util/MHYbuf");
 const kcp = require("node-kcp-token");
 const fs = require("fs");
 const pcapp = require('pcap-parser');
-// const SQLiteCrud = require('sqlite3-promisify');
-const DelimiterStream = require('delimiter-stream');
-const util = require('util');
 const path = require('path');
-const execFile = util.promisify(require('child_process').execFile);
-const udpPacket = require('udp-packet');
-const ipPacket = require('ip-packet')
-const {
-	WSMessage
-} = require("../util/classes");
 const log = new (require("../util/log"))('Sniffer', 'blueBright');
 const chalk = require('chalk');
+const goodTransform = require("../plugins/good-transform/index")
 let Session = {
 	//filename
 	//proxy
 }
 const frontend = require('./frontend-server')
 const MT19937_64 = require("../util/mt64");
-// async function kek() {
-// 	const keysDB = new SQLiteCrud('./data/keys2.db');
-// 	let r = {};
-// 	let rows = await keysDB.all('SELECT * FROM keys');
-
-// 		rows.forEach(row => {
-// 			r[row.first_bytes] = Buffer.from(row.key_buffer).toString('base64');
-// 		})
-// 		console.log(JSON.stringify(r));
-// }
-// kek();
 const packetQueue = [];
 const DIR_SERVER = 0;
 const DIR_CLIENT = 1;
@@ -41,8 +22,6 @@ const PACKET_GetPlayerTokenRsp = MHYbuf.getPacketIDByProtoName('GetPlayerTokenRs
 const PACKET_UnionCmdNotify = MHYbuf.getPacketIDByProtoName('UnionCmdNotify');
 
 let packetQueueSize = 0;
-let unknownPackets = 0,
-	packetOrderCount = 0;
 let MHYKeys = require('../data/MHYkeys.json');
 const config = require('../config');
 for (let key in MHYKeys) {
@@ -159,7 +138,7 @@ function getInfoCharacter(packetName, dir) {
 }
 
 function logPacket(packetSource, packetID, protoName, o, union, last) {
-	// return;
+	return;
 	let s = '';
 	if(union)
 		if(last)
@@ -184,6 +163,8 @@ async function decodePacketProto(packet, ip) {
 	let o = {};
 	if (packetID != parseInt(protoName)) {
 		let object = await MHYbuf.dataToProtobuffer(MHYbuf.parsePacketData(packet), packetID);
+		processGoodTransform(protoName, object);
+
 		o = {
 			packetID,
 			protoName,
@@ -293,6 +274,13 @@ async function execute() {
 		setImmediate(loop);
 	}
 	loop();
+}
+
+function processGoodTransform(packetName, packetObject){
+	if(goodTransform[packetName]) {
+		const good = goodTransform[packetName](packetObject);
+		if(good) packetObject.goodTransform = good;
+	}
 }
 
 let namesToDump = config.ProtosToDump;

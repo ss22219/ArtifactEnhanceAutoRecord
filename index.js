@@ -11,6 +11,7 @@ if(process.argv[2] == 'main') {
 	sniffer.execute();
 	httpDispatch.execute();
 	frontend.execute();
+	sniffer.startProxySession();
 	try{
 		const E = require('./backend/excelPivot');
 	}catch(e) {
@@ -36,6 +37,7 @@ if(process.argv[2] == 'main') {
 	// process.on('uncaughtException', cleanup);
 	process.on('SIGINT', () => {
 		// cleanup();
+		setupHost(true);
 		process.exit();
 	});
 }

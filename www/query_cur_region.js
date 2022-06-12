@@ -8,14 +8,13 @@ const {
 const log = new (require("../util/log"))('Dispatach', 'yellow');
 
 async function query_cur_region_protobuffer(req) {
-	let query_region_list;
-	if(req.headers.host == 'localhost' || req.headers.host == '127.0.0.1') {
-		log.warn('If you are using fiddler, the proxy cannot make a request to the "real" cur. You will need to provide it yourself via a cur.json file in the www/ folder.');
-		query_region_list = require('../www/cur.json');
-	}else{
-		log.log('Making online request to', new URL(req.url, `https://${req.headers.host}`).href);
-		query_region_list = await forceDNS(new URL(req.url, `https://${req.headers.host}`).href);
-	}
+    const splitUrl = req.url.split("?")
+    const host = splitUrl[0].split("/")[2]
+    const noQueryRequest = splitUrl[1] === undefined
+    const query = noQueryRequest ? "" : `?${splitUrl[1]}`
+	
+	log.log('Making online request to', `https://${host}/query_cur_region${query}`);
+	let query_region_list = await forceDNS(`https://${host}/query_cur_region${query}`);
 
 	const root = await protobuf.load("./data/proto/QueryCurrRegionHttpRsp.proto");
 	const cur = root.lookup("QueryCurrRegionHttpRsp");

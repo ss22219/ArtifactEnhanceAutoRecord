@@ -96,7 +96,7 @@ module.exports = {
 			const message = testMessage.decode(moreSliced);
 			return message;
 		} catch (e) {
-			console.log("Error parsing packet %s : Error: %s", this.getProtoNameByPacketID(packetID), e)
+			//console.log("Error parsing packet %s : Error: %s", this.getProtoNameByPacketID(packetID), e)
 		}
 	},
 

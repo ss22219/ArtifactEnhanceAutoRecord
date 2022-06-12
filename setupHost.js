@@ -19,7 +19,7 @@ const setupHost = (restore = false) => {
         hostsContent = fs.readFileSync(path, "utf-8")
         const requireHosts = new Map()
         requireHosts.set(conf.dispatchUrl, "127.0.0.1")
-        requireHosts.set("cngfdispatch.yuanshen.com", "127.0.0.1")
+        requireHosts.set("localdispatch.yuanshen.com", "127.0.0.1")
         const currentHosts = new Map()
         hostsContent.split("\n").map(l => l.trim()).filter(l => !l.startsWith("#") && l.length > 0).forEach(value => {
             const pair = value.trim().split(" ").filter(v => v.trim().length !== 0)
