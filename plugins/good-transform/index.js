@@ -168,14 +168,14 @@ function getEnhanceStrength(prop){
 	return maxIndex - curIndex + 1
 }
 
-function recordArtifactEnhance(artifact, result){
+function recordArtifactEnhance(upgrade, artifact, result){
 	let remark = ''
 	const stats = artifact.substats.length >= 1 ? artifact.substats.map(s => Pinyin(s.key)).reduce((a, b) => a + b) + ' ' : ''
 	if (artifact.rarity == 4) {
 		if (stats.indexOf('b') != -1 && stats.indexOf('B') != -1) remark = ' 【双暴】';
 		else if (result.key.indexOf('暴') != -1 && (stats.indexOf('b') != -1 || stats.indexOf('B') != -1)) remark = ' 【补暴】';
 	}
-	const log = `${upgrade.powerUpRate == 1 ? '' : ('x' + upgrade.powerUpRate + ' ')}${Pinyin(artifact.mainStatKey)} ${result.value}${stats}${Pinyin(result.key)} ${result.strength}${remark}`;
+	const log = `${upgrade.powerUpRate == 1 ? '' : ('x' + upgrade.powerUpRate + ' ')}${Pinyin(artifact.mainStatKey)} ${stats}${result.value}${Pinyin(result.key)} ${result.strength}${remark}`;
 	console.log(log)
 
 	var today = new Date();
@@ -220,7 +220,7 @@ module.exports = {
 
 			var artifact = artifacts.find(a => a.guid == guid);
 			if (artifact) {
-				recordArtifactEnhance(artifact, result)
+				recordArtifactEnhance(upgrade, artifact, result)
 				if (!artifact.substats.find(s => s.key == result.key))
 					artifact.substats.push(result)
 			}
