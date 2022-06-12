@@ -14,7 +14,6 @@ ManualText.forEach(text => {
 	ManualTextMap[text.TextMapId] = text.TextMapContentTextMapHash;
 })
 
-
 const FRZ = {
 	goodize: (string) => {
 		function toTitleCase(str) {
@@ -136,11 +135,9 @@ RelAffix.forEach((b) => {
 	}
 	if (b.PropValue) a.PropValue = b.PropValue;
 });
-let artifacts = []
-let guid;
 
 function Pinyin(key) {
-	if (key.indexOf('暴伤') != -1) return 'b'
+	if (key.indexOf('暴伤') != -1) return 'B'
 	if (key.indexOf('伤') != -1) return 'y'
 	if (key.indexOf('治') != -1) return 'z'
 	if (key.indexOf('充能') != -1) return 'c'
@@ -161,6 +158,37 @@ function Pinyin(key) {
 	return word
 }
 
+function getEnhanceStrength(prop){
+	let prefix = (prop + '').slice(0, prop.length - 1);
+	let maxIndex = 1;
+	let curIndex = parseInt((prop + '').slice(prop.length - 1, prop.length));
+	if (G.RelAffix[prefix + '2']) maxIndex = 2
+	if (G.RelAffix[prefix + '3']) maxIndex = 3
+	if (G.RelAffix[prefix + '4']) maxIndex = 4
+	return maxIndex - curIndex + 1
+}
+
+function recordArtifactEnhance(artifact, result){
+	let remark = ''
+	const stats = artifact.substats.length >= 1 ? artifact.substats.map(s => Pinyin(s.key)).reduce((a, b) => a + b) + ' ' : ''
+	if (artifact.rarity == 4) {
+		if (stats.indexOf('b') != -1 && stats.indexOf('B') != -1) remark = ' 【双暴】';
+		else if (result.key.indexOf('暴') != -1 && (stats.indexOf('b') != -1 || stats.indexOf('B') != -1)) remark = ' 【补暴】';
+	}
+	const log = `${upgrade.powerUpRate == 1 ? '' : ('x' + upgrade.powerUpRate + ' ')}${Pinyin(artifact.mainStatKey)} ${result.value}${stats}${Pinyin(result.key)} ${result.strength}${remark}`;
+	console.log(log)
+
+	var today = new Date();
+	var dd = String(today.getDate()).padStart(2, '0');
+	var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+	var yyyy = today.getFullYear();
+
+	fs.appendFileSync(`强化记录 ${yyyy}${mm}${dd}.txt`, log + "\r\n")
+}
+
+let artifacts = []
+let guid;
+
 module.exports = {
 	ReliquaryUpgradeReq(req) {
 		guid = req.targetReliquaryGuid.toString();
@@ -172,7 +200,6 @@ module.exports = {
 			source: "Iridium",
 		}
 		if (!upgrade.curAppendPropList || !upgrade.curAppendPropList.length) return
-		console.log(upgrade)
 		const curAppendPropList = upgrade.curAppendPropList
 		const oldAppendPropList = upgrade.oldAppendPropList || []
 		if (curAppendPropList.length == oldAppendPropList.length)
@@ -187,33 +214,13 @@ module.exports = {
 				value = Math.round((value * 100 + Number.EPSILON + 0.0001) * 10) / 10;
 			else
 				value = Math.round(value).toFixed(0);
-			let prefix = (prop + '').slice(0, prop.length - 1);
-			let maxIndex = 1;
-			let curIndex = parseInt((prop + '').slice(prop.length - 1, prop.length));
-			if (G.RelAffix[prefix + '2']) maxIndex = 2
-			if (G.RelAffix[prefix + '3']) maxIndex = 3
-			if (G.RelAffix[prefix + '4']) maxIndex = 4
 
-			var result = { key: key, value: value, prop: prop, strength: maxIndex - curIndex + 1 };
+			var result = { key: key, value: value, prop: prop, strength: getEnhanceStrength(prop) };
 			newAppendPropList.push(result);
 
 			var artifact = artifacts.find(a => a.guid == guid);
 			if (artifact) {
-				let remark = ''
-				const stats = artifact.substats.length >= 1 ? artifact.substats.map(s => Pinyin(s.key)).reduce((a, b) => a + b) + ' ' : ''
-				if (artifact.rarity == 4) {
-					if (stats.indexOf('b') != -1 && stats.indexOf('B') != -1) remark = ' 【双暴】';
-					else if (result.key.indexOf('暴') != -1 && (stats.indexOf('b') != -1 || stats.indexOf('B') != -1)) remark = ' 【补暴】';
-				}
-				const log = (`${upgrade.powerUpRate == 1 ? '' : ('x' + upgrade.powerUpRate + ' ')}${Pinyin(artifact.mainStatKey)} ${stats}${Pinyin(result.key)} ${result.strength}${remark}`);
-				console.log(log)
-
-				var today = new Date();
-				var dd = String(today.getDate()).padStart(2, '0');
-				var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-				var yyyy = today.getFullYear();
-
-				fs.appendFileSync(`强化记录 ${yyyy}${mm}${dd}.txt`, log + "\r\n")
+				recordArtifactEnhance(artifact, result)
 				if (!artifact.substats.find(s => s.key == result.key))
 					artifact.substats.push(result)
 			}
